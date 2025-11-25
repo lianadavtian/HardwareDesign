@@ -1,6 +1,6 @@
 module axi_data_width_converter_top #(
-	parameter		SLAVE_DATA_WIDTH	= 8,
-	parameter		MASTER_DATA_WIDTH	= 64,
+	parameter		SLAVE_DATA_WIDTH	= 64,
+	parameter		MASTER_DATA_WIDTH	= 8,
 	parameter byte	TID_WIDTH			= 1, 
 	parameter byte	TDEST_WIDTH			= 1,
 	parameter byte	TUSER_WIDTH			= 1,
@@ -42,8 +42,7 @@ logic reg_s_axis_tvalid;
 logic reg_s_axis_tlast;
 
 assign s_axis_tready = reg_s_axis_tready || !reg_s_axis_tvalid;
-assign m_axis_tvalid = reg_m_axis_tvalid;
-assign reg_m_axis_tready = m_axis_tready;
+assign reg_m_axis_tready = m_axis_tready || !m_axis_tvalid;
 
 always_ff @(posedge aclk) begin
 	if (!areset_n) begin 
@@ -66,7 +65,8 @@ always_ff @(posedge aclk) begin
 		m_axis_tkeep <= 'b0;
 		m_axis_tlast <= 'b0;
 	end
-	else if (reg_m_axis_tvalid) begin 
+	else if (m_axis_tready || !m_axis_tvalid) begin 
+		m_axis_tvalid <= reg_m_axis_tvalid;
 		m_axis_tdata <= reg_m_axis_tdata;
 		m_axis_tkeep <= reg_m_axis_tkeep;
 		m_axis_tlast <= reg_m_axis_tlast;
@@ -77,7 +77,7 @@ generate
 	if (SLAVE_DATA_WIDTH > MASTER_DATA_WIDTH)
 		axi_data_width_downsizer #(
 			.DATA_WIDTH_FROM(SLAVE_DATA_WIDTH),
-			.DATA_WITH_TO(MASTER_DATA_WIDTH),
+			.DATA_WIDTH_TO(MASTER_DATA_WIDTH),
 			.TID_WIDTH(TID_WIDTH),
 			.TDEST_WIDTH(TDEST_WIDTH),
 			.TUSER_WIDTH(TUSER_WIDTH),
@@ -95,10 +95,10 @@ generate
 			.m_axis_tdest(m_axis_tdest),
 			.m_axis_tuser(m_axis_tuser),
 			
-			.s_axis_ready(reg_s_axis_tready),
+			.s_axis_tready(reg_s_axis_tready),
 			.s_axis_tvalid(reg_s_axis_tvalid),
 			.s_axis_tkeep(reg_s_axis_tkeep),
-			.s_axis_data(reg_s_axis_tdata),
+			.s_axis_tdata(reg_s_axis_tdata),
 			.s_axis_tlast(reg_s_axis_tlast),
 
 			.m_axis_tready(reg_m_axis_tready),
@@ -179,5 +179,4 @@ generate
 
 	end
 endgenerate 
-
 endmodule : axi_data_width_converter_top
