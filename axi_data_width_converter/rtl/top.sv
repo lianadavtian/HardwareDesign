@@ -66,7 +66,7 @@ always_ff @(posedge aclk) begin
 		m_axis_tkeep <= 'b0;
 		m_axis_tlast <= 'b0;
 	end
-	else if (m_axis_tvalid && m_axis_tready) begin 
+	else if (reg_m_axis_tvalid) begin 
 		m_axis_tdata <= reg_m_axis_tdata;
 		m_axis_tkeep <= reg_m_axis_tkeep;
 		m_axis_tlast <= reg_m_axis_tlast;
