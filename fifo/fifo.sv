@@ -62,7 +62,7 @@ always_ff @(posedge clk) begin
 	else begin 
 		if (rd_en && wr_en && !full && !empty) count_reg <= count_reg;
 		else begin 
-			if (rd_en && !empty) count_reg <= count - 1;
+			if (rd_en && !empty) count_reg <= count_reg - 1;
 			if (wr_en && !full) count_reg <= count_reg + 1;
 		end
 	end
